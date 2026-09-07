@@ -37,4 +37,4 @@ WORKDIR /home/user/ch552/examples/blink
 ENV HOME="/home/user" TERM="xterm" USER="user" SHELL="/bin/bash" \
   EDITOR="vim" LANG="C.UTF-8" SDCC_HOME="/usr/share/sdcc"
 RUN echo 'root:password' | chpasswd
-CMD [ "/bin/bash" ]
+CMD [ "/bin/bash", "--login" ]
