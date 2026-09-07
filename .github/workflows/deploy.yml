@@ -35,7 +35,7 @@ on:
         type: boolean
         description: 'Start a graphical display for GUI images'
         required: true
-        default: false
+        default: true
 
 jobs:
 
