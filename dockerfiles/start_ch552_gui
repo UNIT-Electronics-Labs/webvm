@@ -8,6 +8,20 @@ export XAUTHORITY="$HOME/.Xauthority"
 export LIBGL_ALWAYS_SOFTWARE=1
 mkdir -p "$HOME/.config/openbox"
 
+# WebVM can restart the configured command while the previous Xorg process is
+# still alive, or leave its lock behind after a crash.  Reuse a live display;
+# remove only stale runtime files so xinit can start cleanly on the next run.
+X_LOCK=/tmp/.X0-lock
+X_SOCKET=/tmp/.X11-unix/X0
+if [ -f "$X_LOCK" ]; then
+	X_PID=$(tr -cd '0-9' < "$X_LOCK" 2>/dev/null || true)
+	if [ -n "$X_PID" ] && kill -0 "$X_PID" 2>/dev/null; then
+		export DISPLAY=:0
+		exec openbox-session
+	fi
+	rm -f "$X_LOCK" "$X_SOCKET" 2>/dev/null || true
+fi
+
 cat > "$HOME/.xinitrc" <<'EOF'
 exec openbox-session
 EOF
