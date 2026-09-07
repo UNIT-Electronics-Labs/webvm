@@ -134,6 +134,11 @@ The generated `.hex` files can then be flashed with a CH55x-compatible USB
 programming tool on the host machine. The WebVM image provides compilation;
 USB passthrough/programming is not performed by the browser VM.
 
+For a lightweight graphical environment, use
+`dockerfiles/debian_sdcc_ch552_gui` and set the workflow input
+`NEEDS_DISPLAY` to `true`. It starts Openbox with Geany and xterm, with the
+`blink` project already open.
+
 > [!NOTE]
 > `dockerfiles/debian_large` is too large of an image for GitHub pages.
 

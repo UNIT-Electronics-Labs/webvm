@@ -31,6 +31,12 @@ on:
         required: true
         default: false
 
+      NEEDS_DISPLAY:
+        type: boolean
+        description: 'Start a graphical display for GUI images'
+        required: true
+        default: false
+
 jobs:
 
   guard_clause:
@@ -183,6 +189,7 @@ jobs:
           sed -i 's#ARGS#${{ env.ARGS }}#g' config_github_terminal.js
           sed -i 's#ENV#${{ env.ENV }}#g' config_github_terminal.js
           sed -i 's#CWD#${{ env.CWD }}#g' config_github_terminal.js
+          sed -i 's#NEEDS_DISPLAY#${{ github.event.inputs.NEEDS_DISPLAY }}#g' config_github_terminal.js
 
       - name: Build NPM package
         run: |

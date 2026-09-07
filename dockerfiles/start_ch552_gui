@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+mkdir -p "$HOME/.config/openbox"
+
+cat > "$HOME/.config/openbox/autostart" <<'EOF'
+geany /home/user/ch552/examples/blink/main.c &
+xterm -title "CH552 SDCC" -e sh -lc 'cd /home/user/ch552/examples/blink; exec bash --login' &
+EOF
+
+exec startx /usr/bin/openbox-session -- :0

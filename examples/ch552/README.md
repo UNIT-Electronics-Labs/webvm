@@ -31,6 +31,16 @@ make
 programador; la imagen WebVM se encarga de compilar, pero no de pasar USB al
 microcontrolador.
 
+## Interfaz gráfica ligera
+
+También existe la imagen `debian_sdcc_ch552_gui`, que incluye Openbox, Geany y
+xterm. En el workflow selecciona:
+
+```text
+DOCKERFILE_PATH: dockerfiles/debian_sdcc_ch552_gui
+NEEDS_DISPLAY: true
+```
+
 Para crear un ejemplo nuevo, usa el `Makefile` y los headers de
 `/home/user/ch552/include`. El objetivo de SDCC es `-mmcs51`; el SDK ya define
 las opciones de memoria y el linker para el CH55x.
