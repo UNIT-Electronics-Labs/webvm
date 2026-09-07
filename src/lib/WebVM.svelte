@@ -34,7 +34,8 @@
 	var editorStatus = '';
 	var editorBusy = false;
 	var directoryOpen = false;
-	var editorDirectories = [];
+	var editorFiles = [];
+	var editorFile = '';
 	var editorDirectory = '';
 	var editorStageCounter = 0;
 	const examplesRoot = '/home/user/ch552/examples';
@@ -71,7 +72,7 @@
 	}
 	function selectedFile()
 	{
-		return `${editorDirectory}/main.c`;
+		return editorFile;
 	}
 	async function runCapture(fileName, args, forwardOutput = true)
 	{
@@ -104,11 +105,11 @@
 		editorStatus = 'Buscando proyectos...';
 		try
 		{
-			const result = await runCapture('/usr/bin/find', [examplesRoot, '-mindepth', '2', '-type', 'f', '-name', 'main.c', '-printf', '%h\\n']);
+			const result = await runCapture('/usr/bin/find', [examplesRoot, '-mindepth', '2', '-type', 'f', '-name', 'main.c', '-print']);
 			if(result.status != 0)
 				throw new Error('No se pudieron leer los proyectos');
-			editorDirectories = result.output.split(/\r?\n/).map(path => path.trim()).filter(Boolean);
-			if(editorDirectories.length == 0)
+			editorFiles = result.output.split(/\r?\n/).map(path => path.trim()).filter(Boolean);
+			if(editorFiles.length == 0)
 				throw new Error('No se encontraron directorios con main.c');
 			directoryOpen = true;
 			editorStatus = 'Elige un directorio';
@@ -122,9 +123,10 @@
 			editorBusy = false;
 		}
 	}
-	async function selectDirectory(directory)
+	async function selectDirectory(file)
 	{
-		editorDirectory = directory;
+		editorFile = file;
+		editorDirectory = file.slice(0, file.lastIndexOf('/'));
 		directoryOpen = false;
 		await openEditor();
 	}
@@ -580,11 +582,11 @@
 		<div class="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/80 p-4">
 			<section class="w-full max-w-xl rounded-lg border border-emerald-400/40 bg-slate-900 p-5 shadow-2xl">
 				<h2 class="font-bold text-emerald-300">Elegir proyecto</h2>
-				<p class="mb-4 text-sm text-slate-400">Selecciona el directorio que contiene el main.c.</p>
+				<p class="mb-4 text-sm text-slate-400">Selecciona el archivo main.c del proyecto.</p>
 				<div class="grid max-h-[60vh] gap-2 overflow-y-auto">
-					{#each editorDirectories as directory}
-						<button class="rounded border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-emerald-400 hover:bg-slate-800" on:click={() => selectDirectory(directory)}>
-							{directory.replace(`${examplesRoot}/`, '')}
+					{#each editorFiles as file}
+						<button class="rounded border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-emerald-400 hover:bg-slate-800" on:click={() => selectDirectory(file)}>
+							{file.replace(`${examplesRoot}/`, '')}
 						</button>
 					{/each}
 				</div>
