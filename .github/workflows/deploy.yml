@@ -167,6 +167,9 @@ jobs:
       - name: Export and unpack container filesystem contents into mounted ext2 image.
         run: | 
           sudo docker cp -a ${CONTAINER_ID}:/ /mnt/
+          # docker cp --archive may not preserve uid/gid. WebVM launches the
+          # configured user as uid 1000, so restore ownership of its home.
+          sudo chown -R 1000:1000 /mnt/home/user
           sudo umount /mnt/
       # Result is an ext2 image for webvm.
 
