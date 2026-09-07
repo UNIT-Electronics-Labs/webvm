@@ -17,6 +17,10 @@ RUN apt-get clean && apt-get update && apt-get -y upgrade && \
     python3-usb sdcc unzip vim less && \
   rm -rf /var/lib/apt/lists/*
 
+# Keep valid SDCC IHX output when the old Buster packihx rejects CH55x output.
+COPY dockerfiles/packihx_compat /usr/local/bin/packihx
+RUN chmod +x /usr/local/bin/packihx
+
 RUN git clone --depth 1 --branch "${CH55X_SDK_REF}" \
     https://github.com/UNIT-Electronics-MX/unit_ch55x_sdk.git /opt/unit_ch55x_sdk
 
