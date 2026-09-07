@@ -3,7 +3,7 @@ export const diskImageUrl = "wss://disks.webvm.io/debian_buster_large_permis_fix
 // The root filesystem backend type use "cloud" for serving remotely or "bytes" for serving locally
 export const diskImageType = "cloud";
 // Print an introduction message about the technology
-export const printIntro = true;
+export const printIntro = false;
 // Is a graphical display needed
 export const needsDisplay = false;
 // Executable full path (Required)

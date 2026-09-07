@@ -8,7 +8,7 @@
 	import '@fortawesome/fontawesome-free/css/all.min.css'
 	import { networkInterface, startLogin } from '$lib/network.js'
 	import { cpuActivity, diskActivity, cpuPercentage, diskLatency } from '$lib/activities.js'
-	import { introMessage, errorMessage, unexpectedErrorMessage } from '$lib/messages.js'
+	import { errorMessage, unexpectedErrorMessage } from '$lib/messages.js'
 	import { displayConfig, handleToolImpl } from '$lib/anthropic.js'
 	import { tryPlausible } from '$lib/plausible.js'
 
@@ -28,6 +28,7 @@
 	var processCount = 0;
 	var curVT = 0;
 	var sideBarPinned = false;
+	var startupLogs = [];
 	var editorOpen = false;
 	var editorContent = '';
 	var editorStatus = '';
@@ -54,6 +55,10 @@
 	{
 		for(var i=0;i<msg.length;i++)
 			term.write(msg[i] + "\n");
+	}
+	function appendLog(message)
+	{
+		startupLogs = [...startupLogs, message.replace(/\x1b\[[0-9;]*m/g, '')];
 	}
 	function linuxOptions(cwd = editorDirectory || examplesRoot)
 	{
@@ -398,14 +403,15 @@
 		consoleDiv.addEventListener("drop", preventDefaults, false);
 		curInnerWidth = window.innerWidth;
 		curInnerHeight = window.innerHeight;
-		if(configObj.printIntro)
-			printMessage(introMessage);
+		appendLog('Devlab Laboratory · UNIT Electronics · CH552 / SDCC');
+		appendLog('Inicializando Linux y herramientas SDCC...');
 		try
 		{
 			await initCheerpX();
 		}
 		catch(e)
 		{
+			appendLog(e.toString());
 			printMessage(unexpectedErrorMessage);
 			printMessage([e.toString()]);
 			return;
@@ -468,14 +474,10 @@
 		}
 		blockCache = await CheerpX.IDBDevice.create(cacheId);
 		var overlayDevice = await CheerpX.OverlayDevice.create(blockDevice, blockCache);
-		var webDevice = await CheerpX.WebDevice.create("");
-		var documentsDevice = await CheerpX.WebDevice.create("documents");
 		dataDevice = await CheerpX.DataDevice.create();
 		var mountPoints = [
 			// The root filesystem, as an Ext2 image
 			{type:"ext2", dev:overlayDevice, path:"/"},
-			// Access to files on the Web server, relative to the current page
-			{type:"dir", dev:webDevice, path:"/web"},
 			// Access to read-only data coming from JavaScript
 			{type:"dir", dev:dataDevice, path:"/data"},
 			// Automatically created device files
@@ -486,8 +488,6 @@
 			{type:"proc", path:"/proc"},
 			// The Linux 'sysfs' filesystem which is used to enumerate emulated devices
 			{type:"sys", path:"/sys"},
-			// Convenient access to sample documents in the user directory
-			{type:"dir", dev:documentsDevice, path:"/home/user/documents"}
 		];
 		try
 		{
@@ -495,6 +495,7 @@
 		}
 		catch(e)
 		{
+			appendLog(e.toString());
 			printMessage(errorMessage);
 			printMessage([e.toString()]);
 			return;
@@ -557,7 +558,7 @@
 <main class="relative w-full h-full">
 	<Nav />
 	<div class="absolute top-10 bottom-0 left-0 right-0">
-		<SideBar on:connect={handleConnect} on:reset={handleReset} handleTool={!configObj.needsDisplay || curVT == 7 ? handleTool : null} on:sidebarPinChange={handleSidebarPinChange}>
+		<SideBar logs={startupLogs} on:connect={handleConnect} on:reset={handleReset} handleTool={!configObj.needsDisplay || curVT == 7 ? handleTool : null} on:sidebarPinChange={handleSidebarPinChange}>
 			<slot></slot>
 		</SideBar>
 		{#if configObj.needsDisplay}
