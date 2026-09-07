@@ -171,6 +171,11 @@ jobs:
           # docker cp --archive may not preserve uid/gid. WebVM launches the
           # configured user as uid 1000, so restore ownership of its home.
           sudo chown -R 1000:1000 /mnt/home/user
+          # Catch a malformed or non-writable CH552 workspace before publishing.
+          if [[ -e /mnt/home/user/ch552 ]]; then
+            sudo test -f /mnt/home/user/ch552/examples/blink/main.c
+            sudo -u '#1000' test -w /mnt/home/user/ch552/examples/blink/main.c
+          fi
           sudo umount /mnt/
       # Result is an ext2 image for webvm.
 

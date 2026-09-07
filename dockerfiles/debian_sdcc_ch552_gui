@@ -27,7 +27,9 @@ RUN useradd -m user && echo "user:password" | chpasswd && \
   cp -a /opt/unit_ch55x_sdk/. /home/user/ch552/ && \
   cp /tmp/start_ch552_gui /usr/local/bin/start_ch552_gui && \
   chmod +x /usr/local/bin/start_ch552_gui && \
-  chown -R user:user /home/user/ch552 /usr/local/bin/start_ch552_gui
+  chown -R user:user /home/user/ch552 /usr/local/bin/start_ch552_gui && \
+  test -f /home/user/ch552/examples/blink/main.c && \
+  runuser -u user -- test -w /home/user/ch552/examples/blink/main.c
 
 WORKDIR /home/user/ch552/examples/blink
 ENV HOME="/home/user" TERM="xterm" USER="user" SHELL="/bin/bash" \

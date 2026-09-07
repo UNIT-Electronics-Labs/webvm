@@ -25,7 +25,9 @@ RUN find /opt/unit_ch55x_sdk -name Makefile -exec sed -i \
 RUN useradd -m user && echo "user:password" | chpasswd && \
   mkdir -p /home/user/ch552 && \
   cp -a /opt/unit_ch55x_sdk/. /home/user/ch552/ && \
-  chown -R user:user /home/user/ch552
+  chown -R user:user /home/user/ch552 && \
+  test -f /home/user/ch552/examples/blink/main.c && \
+  runuser -u user -- test -w /home/user/ch552/examples/blink/main.c
 
 WORKDIR /home/user/ch552/examples/blink
 ENV HOME="/home/user" TERM="xterm" USER="user" SHELL="/bin/bash" \

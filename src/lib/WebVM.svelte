@@ -440,6 +440,9 @@
 	async function initCheerpX()
 	{
 		const CheerpX = await import('@leaningtech/cheerpx');
+		// An overlay stores filesystem blocks, so it must never be reused with a
+		// different base image. Deploys publish a uniquely named ext2 image.
+		const versionedCacheId = `${cacheId}:${configObj.diskImageType}:${configObj.diskImageUrl}`;
 		var blockDevice = null;
 		switch(configObj.diskImageType)
 		{
@@ -474,7 +477,7 @@
 			default:
 				throw new Error("Unrecognized device type");
 		}
-		blockCache = await CheerpX.IDBDevice.create(cacheId);
+		blockCache = await CheerpX.IDBDevice.create(versionedCacheId);
 		var overlayDevice = await CheerpX.OverlayDevice.create(blockDevice, blockCache);
 		dataDevice = await CheerpX.DataDevice.create();
 		var mountPoints = [
