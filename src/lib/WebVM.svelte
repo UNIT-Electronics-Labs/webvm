@@ -592,8 +592,8 @@
 		</div>
 	{/if}
 	{#if editorOpen}
-		<div class="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/80 p-4">
-			<section class="flex h-[90vh] w-full max-w-5xl flex-col rounded-lg border border-emerald-400/40 bg-slate-900 shadow-2xl">
+		<div class="pointer-events-none fixed inset-0 z-20">
+			<section class="pointer-events-auto absolute right-2 top-2 bottom-2 flex w-[calc(100%-1rem)] flex-col rounded-lg border border-emerald-400/40 bg-slate-900 shadow-2xl md:w-[min(68vw,56rem)]">
 				<header class="flex items-center justify-between border-b border-slate-700 px-4 py-3">
 					<div>
 						<h2 class="font-bold text-emerald-300">Editor CH552</h2>
