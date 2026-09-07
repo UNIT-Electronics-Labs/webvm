@@ -137,13 +137,46 @@
 		if(cx == null || editorBusy)
 			return;
 		editorBusy = true;
-		editorStatus = 'Compilando... revisa la terminal';
+		editorStatus = 'Compilando BIN... revisa la terminal';
 		try
 		{
 			if(!await saveEditorFile())
 				return;
-			const result = await cx.run('/usr/bin/make', ['all'], linuxOptions());
-			editorStatus = result.status == 0 ? 'Compilación correcta' : `Error de compilación (${result.status})`;
+			const result = await cx.run('/usr/bin/make', ['bin'], linuxOptions());
+			editorStatus = result.status == 0 ? 'BIN generado correctamente' : `Error de compilación (${result.status})`;
+		}
+		catch(e)
+		{
+			editorStatus = e.toString();
+		}
+		finally
+		{
+			editorBusy = false;
+		}
+	}
+	async function downloadBin()
+	{
+		if(cx == null || editorBusy)
+			return;
+		editorBusy = true;
+		editorStatus = 'Preparando descarga...';
+		try
+		{
+			const result = await runCapture('/usr/bin/base64', ['-w', '0', 'build/main.bin']);
+			if(result.status != 0)
+				throw new Error('No existe build/main.bin; compila primero');
+			const encoded = result.output.replace(/\s/g, '');
+			const raw = atob(encoded);
+			const bytes = new Uint8Array(raw.length);
+			for(let i = 0; i < raw.length; i++)
+				bytes[i] = raw.charCodeAt(i);
+			const url = URL.createObjectURL(new Blob([bytes], {type: 'application/octet-stream'}));
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = 'main.bin';
+			link.click();
+			URL.revokeObjectURL(url);
+			editorStatus = 'main.bin descargado';
 		}
 		catch(e)
 		{
@@ -514,7 +547,8 @@
 					<div class="flex gap-2">
 						<button class="rounded border border-slate-600 px-3 py-2 text-sm text-slate-200" on:click={() => editorOpen = false}>Cerrar</button>
 						<button class="rounded bg-slate-700 px-3 py-2 text-sm font-bold text-white" on:click={saveEditor} disabled={editorBusy}>Guardar</button>
-						<button class="rounded bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950" on:click={compileEditor} disabled={editorBusy}>Guardar y compilar</button>
+						<button class="rounded bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950" on:click={compileEditor} disabled={editorBusy}>Guardar y compilar BIN</button>
+						<button class="rounded border border-emerald-500 px-3 py-2 text-sm font-bold text-emerald-300" on:click={downloadBin} disabled={editorBusy}>Descargar BIN</button>
 					</div>
 				</footer>
 			</section>
