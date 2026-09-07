@@ -25,7 +25,8 @@ RUN git clone --depth 1 --branch "${CH55X_SDK_REF}" \
 # Keep the GUI image's build behavior identical to the terminal image.
 RUN find /opt/unit_ch55x_sdk -name Makefile -exec sed -i \
     -e 's#@$(PACK_HEX) $< > $@#@cp $< $@#' \
-    -e 's#OBJCOPY[[:space:]]*= objcopy#OBJCOPY    = sdobjcopy#' {} +
+    -e 's#OBJCOPY[[:space:]]*= objcopy#OBJCOPY    = sdobjcopy#' \
+    -e 's#@$(OBJCOPY) -I ihex -O binary $< $@#@tmp=$<.regular; cp -L $< $$tmp \&\& $(OBJCOPY) -I ihex -O binary $$tmp $@; status=$$?; rm -f $$tmp; exit $$status#' {} +
 
 RUN useradd -m user && echo "user:password" | chpasswd && \
   mkdir -p /home/user/ch552 && \
