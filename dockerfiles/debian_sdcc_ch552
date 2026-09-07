@@ -1,12 +1,6 @@
-FROM --platform=linux/386 docker.io/i386/debian:buster
+FROM --platform=linux/386 docker.io/i386/debian:bookworm-slim
 ARG DEBIAN_FRONTEND=noninteractive
 ARG CH55X_SDK_REF=main
-
-# Buster is EOL, so use the archived Debian mirrors.
-RUN echo "deb [trusted=yes] http://archive.debian.org/debian buster main contrib non-free" \
-  > /etc/apt/sources.list && \
-  echo "deb [trusted=yes] http://archive.debian.org/debian-security buster/updates main" \
-  >> /etc/apt/sources.list
 
 # SDCC provides the compiler, assembler and linker for the 8051/MCS-51 target.
 # The UNIT CH55x SDK supplies the CH552 register definitions, examples and
