@@ -6,6 +6,14 @@ export XAUTHORITY="$HOME/.Xauthority"
 # CheerpX provides a virtual display without 3D acceleration.  Mesa's
 # software path avoids trying to load the unavailable CheerpX KMS driver.
 export LIBGL_ALWAYS_SOFTWARE=1
+
+# Xorg is started as the unprivileged WebVM user.  It normally creates this
+# directory itself, but the X server deliberately refuses to create it when
+# euid != 0.  Without it, xinit/Openbox can fail even though Xorg appears to
+# have initialized the modesetting screen.
+mkdir -p /tmp/.X11-unix
+chmod 1777 /tmp/.X11-unix
+
 mkdir -p "$HOME/.config/openbox"
 
 cat > "$HOME/.xinitrc" <<'EOF'
