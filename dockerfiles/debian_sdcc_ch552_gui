@@ -17,6 +17,7 @@ RUN apt-get clean && apt-get update && apt-get -y upgrade && \
   rm -rf /var/lib/apt/lists/*
 
 COPY dockerfiles/start_ch552_gui /tmp/start_ch552_gui
+COPY dockerfiles/xorg_ch552.conf /etc/X11/xorg.conf.d/20-cheerpx.conf
 
 RUN git clone --depth 1 --branch "${CH55X_SDK_REF}" \
     https://github.com/UNIT-Electronics-MX/unit_ch55x_sdk.git /opt/unit_ch55x_sdk
