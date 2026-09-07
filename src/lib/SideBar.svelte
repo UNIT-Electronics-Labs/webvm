@@ -9,9 +9,11 @@
 	import PostsTab from './PostsTab.svelte';
 	import DiscordTab from './DiscordTab.svelte';
 	import GitHubTab from './GitHubTab.svelte';
+	import DevlabTab from './DevlabTab.svelte';
 	import SmallButton from './SmallButton.svelte';
 	import { cpuActivity, diskActivity, aiActivity } from './activities.js';
 	const icons = [
+		{ icon: 'fas fa-flask', info: 'Devlab', activity: null },
 		{ icon: 'fas fa-info-circle', info: 'Information', activity: null },
 		{ icon: 'fas fa-wifi', info: 'Networking', activity: null },
 		{ icon: 'fas fa-microchip', info: 'CPU', activity: cpuActivity },
@@ -67,8 +69,8 @@
 	export let handleTool;
 </script>
 
-<div class="flex flex-row w-14 h-full bg-neutral-700" >
-	<div class="flex flex-col shrink-0 w-14 text-gray-300">
+	<div class="flex flex-row w-14 h-full bg-[#0b1117]" >
+	<div class="flex flex-col shrink-0 w-14 text-slate-300">
 		{#each icons as i}
 			{#if i}
 				<Icon
@@ -84,7 +86,7 @@
 		{/each}
 	</div>
 	<div
-		class="relative flex flex-col gap-5 shrink-0 w-80 h-full z-10 p-2 bg-neutral-600 text-gray-100 opacity-95"
+		class="relative flex flex-col gap-5 shrink-0 w-80 h-full z-10 p-2 bg-[#111c26] text-slate-100 opacity-95 border-r border-emerald-400/20"
 		class:hidden={!activeInfo}
 		on:mouseenter={handleMouseEnterPanel}
 		on:mouseleave={hideInfo}
@@ -97,7 +99,9 @@
 				bgColor={sideBarPinned ? "bg-neutral-500" : "bg-neutral-700"}
 			/>
 		</div>
-		{#if activeInfo === 'Information'}
+		{#if activeInfo === 'Devlab'}
+			<DevlabTab />
+		{:else if activeInfo === 'Information'}
 			<InformationTab>
 				<slot></slot>
 			</InformationTab>

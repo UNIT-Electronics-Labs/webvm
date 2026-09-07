@@ -4,7 +4,7 @@ const normal = "\x1b[0m";
 export const introMessage = [
   "+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+",
   "|                                                                             |",
-  "| WebVM is a virtual Linux environment running in the browser via WebAssembly.|",
+  "| Devlab Laboratory · UNIT Electronics · CH552 / SDCC                     |",
   "|                                                                             |",
   "| WebVM is powered by the CheerpX virtualization engine, which enables safe,  |",
   "| sandboxed execution of x86 binaries, fully client-side.                     |",
@@ -20,13 +20,13 @@ export const introMessage = [
   "|                                                                             |",
   "+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+",
   "",
-  "   Welcome to WebVM. If unsure, try these examples:",
+  "   Welcome to Devlab Laboratory. CH552 workspace:",
   "",
-  "     python3 examples/python3/fibonacci.py ",
-  "     gcc -o helloworld examples/c/helloworld.c && ./helloworld",
-  "     objdump -d ./helloworld | less -M",
-  "     vim examples/c/helloworld.c",
-  "     curl --max-time 15 parrot.live  # requires networking",
+  "     cd /home/user/ch552/examples/blink",
+  "     make all",
+  "     make hex     # genera build/main.hex",
+  "     make bin     # genera build/main.bin",
+  "     make clean",
   "",
 ];
 export const errorMessage = [
