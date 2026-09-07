@@ -20,12 +20,10 @@ RUN apt-get clean && apt-get update && apt-get -y upgrade && \
 RUN git clone --depth 1 --branch "${CH55X_SDK_REF}" \
     https://github.com/UNIT-Electronics-MX/unit_ch55x_sdk.git /opt/unit_ch55x_sdk
 
-# SDCC already emits valid Intel HEX (IHX).  Buster's packihx and objcopy can
-# reject this CH55x output, so use the IHX directly for .hex and SDCC's
-# makebin for the binary conversion.
+# SDCC already emits valid Intel HEX (IHX).  Buster's packihx can reject this
+# CH55x output, so use the IHX directly for .hex and keep objcopy for BIN.
 RUN find /opt/unit_ch55x_sdk -name Makefile -exec sed -i \
-    -e 's#@$(PACK_HEX) $< > $@#@cp $< $@#' \
-    -e 's#@$(OBJCOPY) -I ihex -O binary $< $@#@makebin -p $< $@#' {} +
+    -e 's#@$(PACK_HEX) $< > $@#@cp $< $@#' {} +
 
 # Keep a convenient workspace in the normal WebVM user's home directory.
 RUN useradd -m user && echo "user:password" | chpasswd && \
