@@ -23,7 +23,8 @@ RUN git clone --depth 1 --branch "${CH55X_SDK_REF}" \
 # SDCC already emits valid Intel HEX (IHX).  Buster's packihx can reject this
 # CH55x output, so use the IHX directly for .hex and keep objcopy for BIN.
 RUN find /opt/unit_ch55x_sdk -name Makefile -exec sed -i \
-    -e 's#@$(PACK_HEX) $< > $@#@cp $< $@#' {} +
+    -e 's#@$(PACK_HEX) $< > $@#@cp $< $@#' \
+    -e 's#OBJCOPY[[:space:]]*= objcopy#OBJCOPY    = sdobjcopy#' {} +
 
 # Keep a convenient workspace in the normal WebVM user's home directory.
 RUN useradd -m user && echo "user:password" | chpasswd && \
