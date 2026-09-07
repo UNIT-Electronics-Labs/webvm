@@ -12,7 +12,6 @@ export LIBGL_ALWAYS_SOFTWARE=1
 # euid != 0.  Without it, xinit/Openbox can fail even though Xorg appears to
 # have initialized the modesetting screen.
 mkdir -p /tmp/.X11-unix
-chmod 1777 /tmp/.X11-unix
 
 mkdir -p "$HOME/.config/openbox"
 
