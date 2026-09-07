@@ -3,6 +3,9 @@ set -eu
 
 export HOSTNAME=localhost
 export XAUTHORITY="$HOME/.Xauthority"
+# CheerpX provides a virtual display without 3D acceleration.  Mesa's
+# software path avoids trying to load the unavailable CheerpX KMS driver.
+export LIBGL_ALWAYS_SOFTWARE=1
 mkdir -p "$HOME/.config/openbox"
 
 cat > "$HOME/.xinitrc" <<'EOF'
