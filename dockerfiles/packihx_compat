@@ -1,9 +1,0 @@
-#!/bin/sh
-# The IHX emitted by SDCC is already valid Intel HEX. Debian Buster's
-# packihx can reject valid CH55x output after the build has completed, so
-# preserve the input unchanged for the following makebin step.
-if [ "$#" -gt 0 ]; then
-	cat "$@"
-else
-	cat
-fi
