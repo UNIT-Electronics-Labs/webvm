@@ -25,7 +25,7 @@ RUN git clone --depth 1 --branch "${CH55X_SDK_REF}" \
 RUN find /opt/unit_ch55x_sdk -name Makefile -exec sed -i \
     -e 's#@$(PACK_HEX) $< > $@#@cp $< $@#' \
     -e 's#OBJCOPY[[:space:]]*= objcopy#OBJCOPY    = sdobjcopy#' \
-    -e 's#@$(OBJCOPY) -I ihex -O binary $< $@#@tmp=$<.regular; cp -L $< $$tmp \&\& $(OBJCOPY) -I ihex -O binary $$tmp $@; status=$$?; rm -f $$tmp; exit $$status#' {} +
+    -e 's#@$(OBJCOPY) -I ihex -O binary $< $@#@tmp=$<.regular; cp -L $< $$tmp \&\& ($(OBJCOPY) -I ihex -O binary $$tmp $@ || (rm -f $@; makebin -p $$tmp $@)); status=$$?; rm -f $$tmp; exit $$status#' {} +
 
 # Keep a convenient workspace in the normal WebVM user's home directory.
 RUN useradd -m user && echo "user:password" | chpasswd && \
