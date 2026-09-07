@@ -11,7 +11,7 @@ on:
         type: string
         description: 'Path to the Dockerfile'
         required: true
-        default: 'dockerfiles/debian_sdcc_ch552_gui'
+        default: 'dockerfiles/debian_sdcc_ch552'
 
       IMAGE_SIZE:
         type: string
@@ -35,7 +35,7 @@ on:
         type: boolean
         description: 'Start a graphical display for GUI images'
         required: true
-        default: true
+        default: false
 
 jobs:
 

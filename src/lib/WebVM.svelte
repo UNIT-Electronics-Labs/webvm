@@ -21,12 +21,19 @@
 
 	var term = null;
 	var cx = null;
+	var dataDevice = null;
 	var fitAddon = null;
 	var cxReadFunc = null;
 	var blockCache = null;
 	var processCount = 0;
 	var curVT = 0;
 	var sideBarPinned = false;
+	var editorOpen = false;
+	var editorContent = '';
+	var editorStatus = '';
+	var editorBusy = false;
+	const editorFile = '/home/user/ch552/examples/blink/main.c';
+	const editorCwd = '/home/user/ch552/examples/blink';
 	function writeData(buf, vt)
 	{
 		if(vt != 1)
@@ -44,6 +51,108 @@
 	{
 		for(var i=0;i<msg.length;i++)
 			term.write(msg[i] + "\n");
+	}
+	function linuxOptions()
+	{
+		return {
+			...configObj.opts,
+			cwd: editorCwd,
+			uid: 1000,
+			gid: 1000
+		};
+	}
+	async function runCapture(fileName, args)
+	{
+		var output = '';
+		const decoder = new TextDecoder();
+		cx.setCustomConsole((buf, vt) => {
+			if(vt == 1)
+				output += decoder.decode(new Uint8Array(buf), {stream:true});
+		}, term.cols, term.rows);
+		var result;
+		try
+		{
+			result = await cx.run(fileName, args, linuxOptions());
+		}
+		finally
+		{
+			cxReadFunc = cx.setCustomConsole(writeData, term.cols, term.rows);
+		}
+		return {status: result.status, output};
+	}
+	async function openEditor()
+	{
+		if(cx == null || editorBusy)
+			return;
+		editorBusy = true;
+		editorStatus = 'Abriendo main.c...';
+		try
+		{
+			const result = await runCapture('/bin/cat', [editorFile]);
+			if(result.status != 0)
+				throw new Error('No se pudo abrir main.c');
+			editorContent = result.output;
+			editorOpen = true;
+			editorStatus = 'Archivo cargado';
+		}
+		catch(e)
+		{
+			editorStatus = e.toString();
+		}
+		finally
+		{
+			editorBusy = false;
+		}
+	}
+	async function saveEditorFile()
+	{
+		if(cx == null)
+			return false;
+		editorStatus = 'Guardando...';
+		try
+		{
+			await dataDevice.writeFile('/main.c', editorContent);
+			const result = await cx.run('/bin/cp', ['/data/main.c', editorFile], linuxOptions());
+			if(result.status != 0)
+				throw new Error('No se pudo guardar main.c');
+			editorStatus = 'Guardado en Linux';
+			return true;
+		}
+		catch(e)
+		{
+			editorStatus = e.toString();
+			return false;
+		}
+	}
+	async function saveEditor()
+	{
+		if(cx == null || editorBusy)
+			return;
+		editorBusy = true;
+		await saveEditorFile();
+		editorBusy = false;
+	}
+	async function compileEditor()
+	{
+		if(cx == null || editorBusy)
+			return;
+		editorBusy = true;
+		editorStatus = 'Compilando... revisa la terminal';
+		try
+		{
+			if(!await saveEditorFile())
+				return;
+			const result = await cx.run('/usr/bin/make', ['all'], linuxOptions());
+			editorStatus = result.status == 0 ? 'Compilación correcta' : `Error de compilación (${result.status})`;
+		}
+		catch(e)
+		{
+			editorStatus = e.toString();
+		}
+		finally
+		{
+			editorBusy = false;
+		}
 	}
 	function expireEvents(list, curTime, limitTime)
 	{
@@ -284,7 +393,7 @@
 		var overlayDevice = await CheerpX.OverlayDevice.create(blockDevice, blockCache);
 		var webDevice = await CheerpX.WebDevice.create("");
 		var documentsDevice = await CheerpX.WebDevice.create("documents");
-		var dataDevice = await CheerpX.DataDevice.create();
+		dataDevice = await CheerpX.DataDevice.create();
 		var mountPoints = [
 			// The root filesystem, as an Ext2 image
 			{type:"ext2", dev:overlayDevice, path:"/"},
@@ -381,5 +490,34 @@
 		{/if}
 		<div class="absolute top-0 bottom-0 {sideBarPinned ? 'left-[23.5rem]' : 'left-14'} right-0 p-1 scrollbar" id="console">
 		</div>
+		{#if !configObj.needsDisplay}
+			<div class="absolute top-2 right-3 z-10 flex gap-2">
+				<button class="rounded bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950 shadow" on:click={openEditor} disabled={editorBusy || cx == null}>
+					Abrir editor
+				</button>
+			</div>
+		{/if}
 	</div>
+	{#if editorOpen}
+		<div class="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/80 p-4">
+			<section class="flex h-[90vh] w-full max-w-5xl flex-col rounded-lg border border-emerald-400/40 bg-slate-900 shadow-2xl">
+				<header class="flex items-center justify-between border-b border-slate-700 px-4 py-3">
+					<div>
+						<h2 class="font-bold text-emerald-300">Editor CH552</h2>
+						<p class="text-xs text-slate-400">/home/user/ch552/examples/blink/main.c</p>
+					</div>
+					<button class="text-xl text-slate-300 hover:text-white" on:click={() => editorOpen = false} aria-label="Cerrar editor">×</button>
+				</header>
+				<textarea class="min-h-0 flex-1 resize-none bg-slate-950 p-4 font-mono text-sm leading-6 text-slate-100 outline-none" bind:value={editorContent} spellcheck="false"></textarea>
+				<footer class="flex items-center justify-between gap-3 border-t border-slate-700 px-4 py-3">
+					<span class="text-sm text-slate-400">{editorStatus}</span>
+					<div class="flex gap-2">
+						<button class="rounded border border-slate-600 px-3 py-2 text-sm text-slate-200" on:click={() => editorOpen = false}>Cerrar</button>
+						<button class="rounded bg-slate-700 px-3 py-2 text-sm font-bold text-white" on:click={saveEditor} disabled={editorBusy}>Guardar</button>
+						<button class="rounded bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950" on:click={compileEditor} disabled={editorBusy}>Guardar y compilar</button>
+					</div>
+				</footer>
+			</section>
+		</div>
+	{/if}
 </main>
