@@ -35,6 +35,7 @@
 	var directoryOpen = false;
 	var editorDirectories = [];
 	var editorDirectory = '';
+	var editorStageCounter = 0;
 	const examplesRoot = '/home/user/ch552/examples';
 	function writeData(buf, vt)
 	{
@@ -67,13 +68,17 @@
 	{
 		return `${editorDirectory}/main.c`;
 	}
-	async function runCapture(fileName, args)
+	async function runCapture(fileName, args, forwardOutput = true)
 	{
 		var output = '';
 		const decoder = new TextDecoder();
 		cx.setCustomConsole((buf, vt) => {
 			if(vt == 1)
+			{
+				if(forwardOutput)
+					writeData(buf, vt);
 				output += decoder.decode(new Uint8Array(buf), {stream:true});
+			}
 		}, term.cols, term.rows);
 		var result;
 		try
@@ -149,8 +154,9 @@
 		editorStatus = 'Guardando...';
 		try
 		{
-			await dataDevice.writeFile('/main.c', editorContent);
-			const result = await cx.run('/bin/cp', ['/data/main.c', selectedFile()], linuxOptions());
+			const stageFile = `/main-${Date.now()}-${editorStageCounter++}.c`;
+			await dataDevice.writeFile(stageFile, editorContent);
+			const result = await cx.run('/bin/cp', [`/data${stageFile}`, selectedFile()], linuxOptions());
 			if(result.status != 0)
 				throw new Error('No se pudo guardar main.c');
 			editorStatus = 'Guardado en Linux';
@@ -200,7 +206,7 @@
 		editorStatus = 'Preparando descarga...';
 		try
 		{
-			const result = await runCapture('/usr/bin/base64', ['-w', '0', `${editorDirectory}/build/main.bin`]);
+			const result = await runCapture('/usr/bin/base64', ['-w', '0', `${editorDirectory}/build/main.bin`], false);
 			if(result.status != 0)
 				throw new Error('No existe build/main.bin; compila primero');
 			const encoded = result.output.replace(/\s/g, '');
