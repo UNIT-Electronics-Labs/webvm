@@ -121,11 +121,12 @@ jobs:
       # Build the i386 Dockerfile image.
       - run: docker build . --tag $TAG --file ${{ github.event.inputs.DOCKERFILE_PATH }} --platform=i386
       
-      # Run the docker image so that we can export the container.
-      # Run the Docker container with the Google Public DNS nameservers: 8.8.8.8, 8.8.4.4
+      # Create the Docker container without starting its CMD. Starting GUI
+      # images here would launch Xorg and persist /tmp/.X0-lock in the ext2
+      # filesystem exported below.
       - run: |
-          docker run --dns 8.8.8.8 --dns 8.8.4.4 -d $TAG
-          echo "CONTAINER_ID=$(sudo docker ps -aq)" >> $GITHUB_ENV
+          container_id=$(docker create --dns 8.8.8.8 --dns 8.8.4.4 $TAG)
+          echo "CONTAINER_ID=$container_id" >> $GITHUB_ENV
 
       # We extract the CMD, we first need to figure whether the Dockerfile uses CMD or an Entrypoint.
       - name: Extracting CMD / Entrypoint and args
