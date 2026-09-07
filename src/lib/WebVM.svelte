@@ -99,7 +99,7 @@
 		editorStatus = 'Buscando proyectos...';
 		try
 		{
-			const result = await runCapture('/usr/bin/find', [examplesRoot, '-mindepth', '2', '-maxdepth', '2', '-name', 'main.c', '-printf', '%h\\n']);
+			const result = await runCapture('/usr/bin/find', [examplesRoot, '-mindepth', '2', '-type', 'f', '-name', 'main.c', '-printf', '%h\\n']);
 			if(result.status != 0)
 				throw new Error('No se pudieron leer los proyectos');
 			editorDirectories = result.output.split(/\r?\n/).map(path => path.trim()).filter(Boolean);
