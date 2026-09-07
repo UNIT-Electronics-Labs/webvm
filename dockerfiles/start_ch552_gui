@@ -5,6 +5,10 @@ export HOSTNAME=localhost
 export XAUTHORITY="$HOME/.Xauthority"
 mkdir -p "$HOME/.config/openbox"
 
+cat > "$HOME/.xinitrc" <<'EOF'
+exec openbox-session
+EOF
+
 cat > "$HOME/.config/openbox/autostart" <<'EOF'
 geany /home/user/ch552/examples/blink/main.c &
 xterm -title "CH552 SDCC" -e sh -lc 'cd /home/user/ch552/examples/blink; exec bash --login' &
