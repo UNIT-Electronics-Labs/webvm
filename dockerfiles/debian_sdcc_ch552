@@ -1,0 +1,33 @@
+FROM --platform=linux/386 docker.io/i386/debian:buster
+ARG DEBIAN_FRONTEND=noninteractive
+ARG CH55X_SDK_REF=main
+
+# Buster is EOL, so use the archived Debian mirrors.
+RUN echo "deb [trusted=yes] http://archive.debian.org/debian buster main contrib non-free" \
+  > /etc/apt/sources.list && \
+  echo "deb [trusted=yes] http://archive.debian.org/debian-security buster/updates main" \
+  >> /etc/apt/sources.list
+
+# SDCC provides the compiler, assembler and linker for the 8051/MCS-51 target.
+# The UNIT CH55x SDK supplies the CH552 register definitions, examples and
+# build/upload files used by this project.
+RUN apt-get clean && apt-get update && apt-get -y upgrade && \
+  apt-get install -y --no-install-recommends \
+    apt-utils binutils ca-certificates curl git make python3 python3-pip \
+    python3-usb sdcc unzip vim less && \
+  rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 --branch "${CH55X_SDK_REF}" \
+    https://github.com/UNIT-Electronics-MX/unit_ch55x_sdk.git /opt/unit_ch55x_sdk
+
+# Keep a convenient workspace in the normal WebVM user's home directory.
+RUN useradd -m user && echo "user:password" | chpasswd && \
+  mkdir -p /home/user/ch552 && \
+  cp -a /opt/unit_ch55x_sdk/. /home/user/ch552/ && \
+  chown -R user:user /home/user/ch552
+
+WORKDIR /home/user/ch552/examples/blink
+ENV HOME="/home/user" TERM="xterm" USER="user" SHELL="/bin/bash" \
+  EDITOR="vim" LANG="C.UTF-8" SDCC_HOME="/usr/share/sdcc"
+RUN echo 'root:password' | chpasswd
+CMD [ "/bin/bash" ]

@@ -117,6 +117,23 @@ Fork the WebVM repository to deploy your own version to GitHub Pages:
 
 The same `Deploy` workflow also builds custom `.ext2` disk images from a Dockerfile. You can point it at `dockerfiles/debian_mini` or another Dockerfile, then either publish the result as a GitHub Release asset or deploy the Pages build from your fork.
 
+For an SDCC environment for CH552/CH55x development, use
+`dockerfiles/debian_sdcc_ch552` as the Dockerfile path. It includes SDCC, GNU
+Make and the UNIT Electronics MX CH55x SDK with headers, examples and the
+`chprog.py` uploader. The image starts in the `blink` example. Compile it with:
+
+```sh
+cd /home/user/ch552/examples/blink
+make
+```
+
+Use `make help`, `make hex`, `make bin` or `make flash` there. Other examples
+are available under `/home/user/ch552/examples`.
+
+The generated `.hex` files can then be flashed with a CH55x-compatible USB
+programming tool on the host machine. The WebVM image provides compilation;
+USB passthrough/programming is not performed by the browser VM.
+
 > [!NOTE]
 > `dockerfiles/debian_large` is too large of an image for GitHub pages.
 
