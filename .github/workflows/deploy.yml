@@ -11,7 +11,7 @@ on:
         type: string
         description: 'Path to the Dockerfile'
         required: true
-        default: 'dockerfiles/debian_sdcc_ch552'
+        default: 'dockerfiles/debian_sdcc_ch552_gui'
 
       IMAGE_SIZE:
         type: string
