@@ -32,8 +32,10 @@
 	var editorContent = '';
 	var editorStatus = '';
 	var editorBusy = false;
-	const editorFile = '/home/user/ch552/examples/blink/main.c';
-	const editorCwd = '/home/user/ch552/examples/blink';
+	var directoryOpen = false;
+	var editorDirectories = [];
+	var editorDirectory = '';
+	const examplesRoot = '/home/user/ch552/examples';
 	function writeData(buf, vt)
 	{
 		if(vt != 1)
@@ -52,14 +54,18 @@
 		for(var i=0;i<msg.length;i++)
 			term.write(msg[i] + "\n");
 	}
-	function linuxOptions()
+	function linuxOptions(cwd = editorDirectory || examplesRoot)
 	{
 		return {
 			...configObj.opts,
-			cwd: editorCwd,
+			cwd,
 			uid: 1000,
 			gid: 1000
 		};
+	}
+	function selectedFile()
+	{
+		return `${editorDirectory}/main.c`;
 	}
 	async function runCapture(fileName, args)
 	{
@@ -80,6 +86,38 @@
 		}
 		return {status: result.status, output};
 	}
+	async function chooseDirectory()
+	{
+		if(cx == null || editorBusy)
+			return;
+		editorBusy = true;
+		editorStatus = 'Buscando proyectos...';
+		try
+		{
+			const result = await runCapture('/usr/bin/find', [examplesRoot, '-mindepth', '2', '-maxdepth', '2', '-name', 'main.c', '-printf', '%h\\n']);
+			if(result.status != 0)
+				throw new Error('No se pudieron leer los proyectos');
+			editorDirectories = result.output.split(/\r?\n/).map(path => path.trim()).filter(Boolean);
+			if(editorDirectories.length == 0)
+				throw new Error('No se encontraron directorios con main.c');
+			directoryOpen = true;
+			editorStatus = 'Elige un directorio';
+		}
+		catch(e)
+		{
+			editorStatus = e.toString();
+		}
+		finally
+		{
+			editorBusy = false;
+		}
+	}
+	async function selectDirectory(directory)
+	{
+		editorDirectory = directory;
+		directoryOpen = false;
+		await openEditor();
+	}
 	async function openEditor()
 	{
 		if(cx == null || editorBusy)
@@ -88,7 +126,7 @@
 		editorStatus = 'Abriendo main.c...';
 		try
 		{
-			const result = await runCapture('/bin/cat', [editorFile]);
+			const result = await runCapture('/bin/cat', [selectedFile()]);
 			if(result.status != 0)
 				throw new Error('No se pudo abrir main.c');
 			editorContent = result.output;
@@ -112,7 +150,7 @@
 		try
 		{
 			await dataDevice.writeFile('/main.c', editorContent);
-			const result = await cx.run('/bin/cp', ['/data/main.c', editorFile], linuxOptions());
+			const result = await cx.run('/bin/cp', ['/data/main.c', selectedFile()], linuxOptions());
 			if(result.status != 0)
 				throw new Error('No se pudo guardar main.c');
 			editorStatus = 'Guardado en Linux';
@@ -162,7 +200,7 @@
 		editorStatus = 'Preparando descarga...';
 		try
 		{
-			const result = await runCapture('/usr/bin/base64', ['-w', '0', 'build/main.bin']);
+			const result = await runCapture('/usr/bin/base64', ['-w', '0', `${editorDirectory}/build/main.bin`]);
 			if(result.status != 0)
 				throw new Error('No existe build/main.bin; compila primero');
 			const encoded = result.output.replace(/\s/g, '');
@@ -525,19 +563,35 @@
 		</div>
 		{#if !configObj.needsDisplay}
 			<div class="absolute top-2 right-3 z-10 flex gap-2">
-				<button class="rounded bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950 shadow" on:click={openEditor} disabled={editorBusy || cx == null}>
+				<button class="rounded bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950 shadow" on:click={chooseDirectory} disabled={editorBusy || cx == null}>
 					Abrir editor
 				</button>
 			</div>
 		{/if}
-	</div>
+		</div>
+	{#if directoryOpen}
+		<div class="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/80 p-4">
+			<section class="w-full max-w-xl rounded-lg border border-emerald-400/40 bg-slate-900 p-5 shadow-2xl">
+				<h2 class="font-bold text-emerald-300">Elegir proyecto</h2>
+				<p class="mb-4 text-sm text-slate-400">Selecciona el directorio que contiene el main.c.</p>
+				<div class="grid max-h-[60vh] gap-2 overflow-y-auto">
+					{#each editorDirectories as directory}
+						<button class="rounded border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-emerald-400 hover:bg-slate-800" on:click={() => selectDirectory(directory)}>
+							{directory.replace(`${examplesRoot}/`, '')}
+						</button>
+					{/each}
+				</div>
+				<button class="mt-4 rounded border border-slate-600 px-3 py-2 text-sm text-slate-300" on:click={() => directoryOpen = false}>Cancelar</button>
+			</section>
+		</div>
+	{/if}
 	{#if editorOpen}
 		<div class="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/80 p-4">
 			<section class="flex h-[90vh] w-full max-w-5xl flex-col rounded-lg border border-emerald-400/40 bg-slate-900 shadow-2xl">
 				<header class="flex items-center justify-between border-b border-slate-700 px-4 py-3">
 					<div>
 						<h2 class="font-bold text-emerald-300">Editor CH552</h2>
-						<p class="text-xs text-slate-400">/home/user/ch552/examples/blink/main.c</p>
+						<p class="text-xs text-slate-400">{selectedFile()}</p>
 					</div>
 					<button class="text-xl text-slate-300 hover:text-white" on:click={() => editorOpen = false} aria-label="Cerrar editor">×</button>
 				</header>
